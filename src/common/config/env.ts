@@ -19,7 +19,7 @@ const schema = z.object({
     ACCESS_SECRET: z.string(),
     REFRESH_SECRET: z.string(),
     ACCESS_EXPIRED_IN: z.string(),
-    REFRESH_EXPIRED_IN: z.string()
+    REFRESH_EXPIRED_IN: z.string(),
 });
 
 const parsed = schema.parse(process.env);
@@ -42,5 +42,6 @@ export const env = {
         accessSecret :parsed.ACCESS_SECRET,
         accessExpiredIn:parsed.ACCESS_EXPIRED_IN,
         refreshExpiredIn:parsed.REFRESH_EXPIRED_IN
-    }
+    },
+    isProduction: process.env.NODE_ENV=== "production"
 };

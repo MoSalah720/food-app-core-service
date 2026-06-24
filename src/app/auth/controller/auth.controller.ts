@@ -1,7 +1,8 @@
-import { NextFunction ,Request , Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { authService, AuthService } from "../service/auth.service";
 import { validateBody } from "../../../common/validation/validate";
-import { RegisterDTO } from "../dto/auth.dto";
+import { ForgetPasswordDTO, LoginDTO, RegisterDTO, ResetPasswordDTO } from "../dto/auth.dto";
+import { setAuthCookies } from "../../../common/utils/Cookies";
 
 
 export class AuthController{
@@ -17,13 +18,71 @@ export class AuthController{
         //2. Call service
         const result = await this.authService.register(data);
         //3. Response
+       setAuthCookies(res,result.accessToken,result.refreshToken)
+
         res.status(201).json(result);
         }
         catch(err){
             next(err);
         }
 
-    }   
+    }  
+    
+    login = async(req:Request ,res:Response, next:NextFunction)=>
+    {
+        try {
+            const data = await validateBody(LoginDTO,req.body);
+            const result = await this.authService.login(data);
+            setAuthCookies(res , result.accessToken,result.refreshToken)
+            res.status(200).json(result);
+            
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    forgetPassword = async(req:Request ,res:Response, next:NextFunction)=>{
+        try {
+            const data = await validateBody(ForgetPasswordDTO,req.body);
+            await this.authService.forgetPassword(data);
+            res.status(201).json({
+                "message":"email sent with OTP"
+            })
+            
+        } catch (err) {
+            next(err);
+        }
+    }
+    resetPassword = async(req:Request ,res:Response, next:NextFunction)=>{
+        try {
+            const data = await validateBody(ResetPasswordDTO,req.body);
+            await this.authService.resetPassword(data);
+            res.status(201).json({
+                "message":"Password resets successfully, please login again"
+            })
+            
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    refreshToken = async(req:Request ,res:Response, next:NextFunction)=>{
+        try {
+            const token = req.body.refreshToken;
+             console.log("token:", token);
+
+            const newAccessToken = await authService.refreshToken(token);
+            console.log("newAccessToken:", newAccessToken);
+
+            res.status(201).json({
+                "message":"success"
+            });
+
+        } catch (err) {
+            next(err)
+        }
+    }
+
 }
 
 export const authController = new AuthController(authService)

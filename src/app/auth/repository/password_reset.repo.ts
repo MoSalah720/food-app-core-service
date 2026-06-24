@@ -1,0 +1,42 @@
+import { db } from "../../../common/knex/knex";
+import { PasswordReset } from "../entiity/password_reset_entity";
+
+const PASSWORD_RESET_COLUMNS=['id','user_id','otp_hash','created_at','expires_at','consumed_at']
+
+function toEntity(row:any):PasswordReset{
+    return new PasswordReset({
+        id:row.id,
+        userId:row.user_id,
+        otpHash:row.otp_hash,
+        createdAt: row.created_at,
+        expiresAt: row.expires_at,
+        consumedAt:row.consumed_at
+    })
+}
+
+export async function createPasswordResets(passwordReset:Partial<PasswordReset>){
+    await db("password_resets").insert({
+        user_id:passwordReset.userId,
+        otp_hash:passwordReset.otpHash,
+        created_at:passwordReset.createdAt,
+        expires_at:passwordReset.expiresAt
+    })
+}
+
+export async function findLatestPasswordResetByUserId(UserId:number):Promise<PasswordReset|undefined> {
+    const row = await db('password_resets').
+    select(PASSWORD_RESET_COLUMNS).
+    where('user_id',UserId).
+    whereNull('consumed_at').
+    orderBy('id','desc').
+    first()
+    ;
+
+    return toEntity(row);
+}
+
+export async function updatePasswordResetConsumedAt(id:number) {
+    await db("password_resets").where('id',id).update({
+        consumed_at:new Date()
+    });
+}

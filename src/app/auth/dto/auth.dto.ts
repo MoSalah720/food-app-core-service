@@ -1,6 +1,6 @@
 // dto => data transfer object  => class that defines the structure of data being sent or received in an application
 
-import {IsEmail, MinLength, IsString, IsStrongPassword, MaxLength, IsEnum} from "class-validator";
+import {IsEmail, MinLength, IsString, IsStrongPassword, MaxLength, IsEnum, IsNotEmpty} from "class-validator";
 import {SystemRole} from "../../user/enums";
 
 export class RegisterDTO {
@@ -29,4 +29,40 @@ export class RegisterDTO {
 
     @IsEnum(SystemRole)
     role!: SystemRole;
+}
+
+export class LoginDTO{
+    @IsEmail()
+    email!: string;
+
+    @IsString()
+    @IsNotEmpty()
+    password!: string;
+}
+
+export class ForgetPasswordDTO{
+    @IsEmail()
+    email!: string
+}
+
+export class ResetPasswordDTO{
+    @IsEmail()
+    email!: string;
+
+    @IsString()
+    @MinLength(6)
+    otp!: string;
+
+    @IsStrongPassword({
+        minLength: 8,
+        minLowercase: 1,
+        minUppercase: 1,
+        minNumbers: 1,
+        minSymbols: 1,
+
+    }, {
+        message: 'Password is not strong enough. It must contain at least 8 characters, one uppercase letter, one lowercase letter, one number.',
+    })
+    newPassword!: string;
+
 }
