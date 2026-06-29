@@ -1,7 +1,8 @@
 // dto => data transfer object  => class that defines the structure of data being sent or received in an application
 
-import {IsEmail, MinLength, IsString, IsStrongPassword, MaxLength, IsEnum, IsNotEmpty} from "class-validator";
+import {IsEmail, MinLength, IsString, IsStrongPassword, MaxLength, IsEnum, IsNotEmpty, IsOptional, ValidateNested} from "class-validator";
 import {SystemRole} from "../../user/enums";
+import { Type } from "class-transformer";
 
 export class RegisterDTO {
     @IsEmail()
@@ -29,6 +30,11 @@ export class RegisterDTO {
 
     @IsEnum(SystemRole)
     role!: SystemRole;
+
+    @IsOptional()
+    @ValidateNested()
+    @Type(()=>RegisterRestaurantDTO)
+    restaurant?:RegisterRestaurantDTO
 }
 
 export class LoginDTO{
@@ -65,4 +71,18 @@ export class ResetPasswordDTO{
     })
     newPassword!: string;
 
+}
+
+export class RegisterRestaurantDTO{
+    @IsString()
+    @MinLength(1)
+    name!:string;
+
+    @IsOptional()
+    @IsString()
+    logoURL?:string;
+
+    @IsString()
+    @MinLength(1)
+    primaryCountry!:string
 }

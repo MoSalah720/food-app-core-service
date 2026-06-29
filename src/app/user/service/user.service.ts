@@ -1,4 +1,3 @@
-import { JwtPayload } from "jsonwebtoken";
 import { UserNotFound } from "../error";
 import { findUserById, updateUserInfo } from "../repository/users.repo";
 import { UpdateUserDTO } from "../userDTO/user.DTO";
@@ -20,26 +19,21 @@ export class UserService{
         }
     }
 
-    updateUser = async(data:UpdateUserDTO,currentUser:JwtPayload)=>{
-        const user = await findUserById(currentUser.userId);
+    updateUser = async(data:UpdateUserDTO, userId:number)=>{
+        const user = await findUserById(userId);
+        console.log(user);
          if (!user) {
             throw UserNotFound;
         }
         
-        const updatedUser=  await updateUserInfo({id: user.id,
-        name: data.name,
-        phone: data.phone,});
+        const updated=  await updateUserInfo(userId , data);
 
         return{
-            "message":"User updated successfully",
-            "user":{
-
-                "id":updatedUser.id,
-                "email":updatedUser.email,
-                "phone":updatedUser.phone,
-                "name":updatedUser.name,
-                "systemRole":updatedUser.systemRole
-            }
+                id:updated.id,
+                email:updated.email,
+                phone:updated.phone,
+                name:updated.name,
+                systemRole:updated.systemRole
         }
 
     }

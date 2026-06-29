@@ -1,14 +1,18 @@
 import { createUser, findUserByEmail, findUserExistByEmailOrPhone, updateUserPassword } from "../../user/repository/users.repo";
 import { ForgetPasswordDTO, LoginDTO, RegisterDTO, ResetPasswordDTO } from "../dto/auth.dto";
-import { CannotSignUpAsSystemAdmin, IncorrectCradentials, InvalidOTPError, UserAlreadyExistError } from "../error";
+import { CannotSignUpAsSystemAdmin, IncorrectCradentials, InvalidOTPError, RestaurantDataIsRequiredError, UserAlreadyExistError } from "../error";
 import { createAccessToken, createRefreshToken, generateOTP, hashOTP, hashPassword, varifyRefreshToken } from "../utils";
 import { SystemRole } from "../../user/enums";
 import { compare } from "bcrypt";
 import { createPasswordResets, findLatestPasswordResetByUserId, updatePasswordResetConsumedAt } from "../repository/password_reset.repo";
+import { restaurantService, RestaurantService } from "../../restaurant/service/restaurant.service";
+import { db } from "../../../common/knex/knex";
 
 export class AuthService{
-    register = async(data :RegisterDTO)=>{
+    constructor(private readonly restaurantService:RestaurantService){
 
+    }
+    register = async(data :RegisterDTO)=>{
 
         if (data.role===SystemRole.SYSTEM_ADMIN) {
             throw CannotSignUpAsSystemAdmin
@@ -30,17 +34,39 @@ export class AuthService{
        // 4. create user
 
        const now = new Date();
-       const user = await createUser({
-        email:data.email,
-        phone:data.phone,
-        passwordHash:hashedPassword,
-        name :data.name,
-        systemRole:data.role,
-        createdAt:now,
-        updatedAt:now
-    })
+       const trx = await db.transaction();
+       let user;
+       let restaurant;
 
+       try {
+                user = await createUser({
+                email:data.email,
+                phone:data.phone,
+                passwordHash:hashedPassword,
+                name :data.name,
+                systemRole:data.role,
+                createdAt:now,
+                updatedAt:now
+            }, trx)
 
+            // chexk if the type of user is restaurant and then call the restaurant service to create the restaurant
+
+            if (data.role === SystemRole.RESTAURANT_USER) {
+                if (data.restaurant == undefined) {
+                    throw RestaurantDataIsRequiredError
+                }
+                restaurant = await this.restaurantService.create( user.id, data.restaurant , trx);
+            }
+            
+            await trx.commit();
+
+        
+       } catch (error) {
+        
+        await trx.rollback;
+        throw error;
+       }
+      
 
        // 5. create access token , refresh token
        const payload ={userId: user.id , role: data.role , email: user.email}
@@ -59,7 +85,9 @@ export class AuthService{
                 phone: user.phone,
                 systemRole: user.systemRole,
                 createdAt: user.createdAt
-            }
+            },
+            restaurant
+
         }
 
     }
@@ -144,4 +172,4 @@ export class AuthService{
     }
 }
 
-export const authService = new AuthService();
+export const authService = new AuthService(restaurantService);

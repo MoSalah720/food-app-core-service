@@ -1,11 +1,13 @@
-import { IsNotEmpty, IsString, MaxLength, MinLength } from "class-validator";
+import {  IsOptional, IsString, MaxLength, MinLength } from "class-validator";
 
 export class UpdateUserDTO{
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  name!: string;
+  @MinLength(1)
+  name?: string;
 
+  @IsOptional()
   @MinLength(10)  
   @MaxLength(11)
-  phone!: string;
+  phone?: string;
 }

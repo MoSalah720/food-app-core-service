@@ -3,12 +3,16 @@ import { healthRoute } from "./app/health/health.route";
 import { authRouter } from "./app/auth/routes";
 import { userRouter } from "./app/user/routes";
 import { customerRouter } from "./app/addresses/routes";
+import { restaurantRouter } from "./app/restaurant/routes";
+import { branchRouter } from "./app/branch/routes";
 
 export const routes = Router();
 
 routes.use("/health",healthRoute);
 
-//auth
+
 routes.use('/auth',authRouter);
 routes.use('/user',userRouter);
 routes.use('/customer/addresses',customerRouter);
+routes.use('/restaurant',restaurantRouter);
+routes.use('/',branchRouter);

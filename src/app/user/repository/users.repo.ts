@@ -1,4 +1,4 @@
-import { boolean } from "zod";
+import { Knex } from "knex";
 import { db } from "../../../common/knex/knex";
 import { User } from "../entity/user_entity";
 
@@ -81,8 +81,8 @@ export async function isUserIsACustomer(userId:number):Promise<boolean>{
     return result.rows.length > 0;
 }
 
-export async function createUser(user:Partial<User>): Promise<User> {
-    const [row] = await db('users')
+export async function createUser(user:Partial<User> ,conn:Knex = db): Promise<User> {
+    const [row] = await conn('users')
         .insert({
             email: user.email,
             phone: user.phone,
@@ -101,11 +101,10 @@ export async function updateUserPassword(id:number ,password:string){
     .update({password_hash:password});
 }
 
-export async function updateUserInfo(user:Partial<User>):Promise<User>{
-    const [row] =await db('users').where('id',user.id).update({
-        name:user.name,
-        phone:user.phone,
-        system_role:user.systemRole
+export async function updateUserInfo(id:number , data:Partial<{name:string,phone:string}>):Promise<User>{
+    const [row] =await db('users').where('id',id).update({
+       ...data,
+       updated_at: new Date()
     }).returning(USER_COLUMNS);
     return toEntity(row);
 }
