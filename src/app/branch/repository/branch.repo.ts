@@ -77,7 +77,7 @@ export async function createBranch(data:Partial<Branch>, conn:Knex=db):Promise<B
     return toEntity(row);
 }
 
-export async function findNearbyBranches(lat:number, lng:number): Promise<Branch[]> {
+export async function findNearbyBranches(lat:number, lng:number): Promise<any[]> {
     const result = await db.raw(`
         SELECT 
         b.id,
