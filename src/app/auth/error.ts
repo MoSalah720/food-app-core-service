@@ -4,7 +4,7 @@ export const UserAlreadyExistError = new AppError("User already exist with the s
 
 export const CannotSignUpAsSystemAdmin = new AppError("You can not sign up as system admin",403);
 
-export const IncorrectCradentials = new AppError("Incorrect email or passord", 401);
+export const IncorrectCredentials = new AppError("Incorrect email or passord", 401);
 
 export const InvalidOTPError = new AppError("Invalid OTP");
 

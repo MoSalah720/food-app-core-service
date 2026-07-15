@@ -3,6 +3,8 @@ import { authService, AuthService } from "../service/auth.service";
 import { validateBody } from "../../../common/validation/validate";
 import { ForgetPasswordDTO, LoginDTO, RegisterDTO, ResetPasswordDTO } from "../dto/auth.dto";
 import { setAuthCookies } from "../../../common/utils/Cookies";
+import { env } from "../../../common/config/env";
+import { toMS } from "../../../common/utils/time";
 
 
 export class AuthController{
@@ -65,24 +67,32 @@ export class AuthController{
             next(err);
         }
     }
-
-    refreshToken = async(req:Request ,res:Response, next:NextFunction)=>{
+    acceptInvite = async(req:Request ,res:Response, next:NextFunction)=>{
         try {
-            const token = req.body.refreshToken;
-             console.log("token:", token);
-
-            const newAccessToken = await authService.refreshToken(token);
-            console.log("newAccessToken:", newAccessToken);
-
-            res.status(201).json({
-                "message":"success"
-            });
-
+            const data = await validateBody(ResetPasswordDTO,req.body);
+            await this.authService.acceptInvite(data);
+            res.status(200).json({
+                "message":"Invitation accepted successfully , please login again"
+            })
+            
         } catch (err) {
-            next(err)
+            next(err);
         }
     }
-
+    refresh = async(req:Request ,res:Response, next:NextFunction)=>{
+        
+           try {
+            const result = await this.authService.refresh(req.cookies.refresh_token);
+            res.cookie("access_token", result.accessToken, {
+                httpOnly: true,
+                secure: env.isProduction,
+                maxAge: toMS(1, 'h'),
+            });
+         res.status(200).json({message: "success"});
+        } catch(err) {
+            next(err);
+        }
+    
+    }
 }
-
 export const authController = new AuthController(authService)

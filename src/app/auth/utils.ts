@@ -14,9 +14,13 @@ export  function comparePassword(passwordInput:string,passwordHashed:string):Pro
 }
 
 export interface JwtPayload{
-    userId :number,
-    email:string,
-    role:string
+    userId :number;
+    email:string;
+    role:string;
+    //for restaurant users only
+    restaurantId?: number;
+    restaurantRole?: string;
+    branchIds?: number[];
 }
 
 export function createAccessToken(payload:JwtPayload):string{

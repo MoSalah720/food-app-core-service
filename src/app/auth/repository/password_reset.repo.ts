@@ -1,3 +1,4 @@
+import { Knex } from "knex";
 import { db } from "../../../common/knex/knex";
 import { PasswordReset } from "../entiity/password_reset_entity";
 
@@ -14,8 +15,9 @@ function toEntity(row:any):PasswordReset{
     })
 }
 
-export async function createPasswordResets(passwordReset:Partial<PasswordReset>){
-    await db("password_resets").insert({
+export async function createPasswordResets(passwordReset:Partial<PasswordReset> ,trx?: Knex){
+     const query = trx || db
+    await query("password_resets").insert({
         user_id:passwordReset.userId,
         otp_hash:passwordReset.otpHash,
         created_at:passwordReset.createdAt,
@@ -29,10 +31,9 @@ export async function findLatestPasswordResetByUserId(UserId:number):Promise<Pas
     where('user_id',UserId).
     whereNull('consumed_at').
     orderBy('id','desc').
-    first()
-    ;
+    first();
 
-    return toEntity(row);
+    return row ? toEntity(row) : undefined;
 }
 
 export async function updatePasswordResetConsumedAt(id:number) {
