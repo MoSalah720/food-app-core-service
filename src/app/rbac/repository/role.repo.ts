@@ -1,6 +1,6 @@
 import { Knex } from "knex";
 import { Role } from "../entity/role.entity";
-import { db } from "../../../common/knex/knex";
+import { db } from "../../../lib/knex/knex";
 
 export const ROLE_COLUMNS = [
     "id",

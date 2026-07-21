@@ -1,7 +1,6 @@
 import path from 'path';
-import {config} from 'dotenv';
-import {z} from 'zod';
-import { isValidJWT } from 'zod/v4/core';
+import { config } from 'dotenv';
+import { z } from 'zod';
 
 config({ path: path.resolve(__dirname, '../../../.env') });
 
@@ -9,17 +8,21 @@ config({ path: path.resolve(__dirname, '../../../.env') });
 const schema = z.object({
   PORT: z.string().default("3000"),
   DB_HOST: z.string().default("localhost"),
-    DB_PORT: z.string().default("5432"),
-    DB_USERNAME: z.string().default("postgres"),
-    DB_PASSWORD: z.string(),
-    DB_NAME: z.string(),
-    DB_POOL_MAX: z.string().default('10'),
-    DB_MIGRATION_DIRECTORY: z.string(),
-    DB_MIGRATION_EXTENSION: z.string(),
-    ACCESS_SECRET: z.string(),
-    REFRESH_SECRET: z.string(),
-    ACCESS_EXPIRED_IN: z.string(),
-    REFRESH_EXPIRED_IN: z.string(),
+  DB_PORT: z.string().default("5432"),
+  DB_USERNAME: z.string().default("postgres"),
+  DB_PASSWORD: z.string(),
+  DB_NAME: z.string(),
+  DB_POOL_MAX: z.string().default('10'),
+  DB_MIGRATION_DIRECTORY: z.string(),
+  DB_MIGRATION_EXTENSION: z.string(),
+  ACCESS_SECRET: z.string(),
+  REFRESH_SECRET: z.string(),
+  ACCESS_EXPIRED_IN: z.string(),
+  REFRESH_EXPIRED_IN: z.string(),
+  CORS_ORIGINS: z.string().default("http://localhost:3000"),
+  REDIS_HOST: z.string().default("localhost"),
+  REDIS_PORT: z.string().default("6379"),
+  REDIS_PASSWORD: z.string().default(""),
 });
 
 const parsed = schema.parse(process.env);
@@ -43,5 +46,15 @@ export const env = {
         accessExpiredIn:parsed.ACCESS_EXPIRED_IN,
         refreshExpiredIn:parsed.REFRESH_EXPIRED_IN
     },
-    isProduction: process.env.NODE_ENV=== "production"
+    isProduction: process.env.NODE_ENV=== "production",
+
+    cors:{
+        origins: parsed.CORS_ORIGINS.split(','),
+    },
+    redis:{
+        host: parsed.REDIS_HOST,
+        port: Number(parsed.REDIS_PORT),
+        password: parsed.REDIS_PASSWORD
+    }
+   
 };

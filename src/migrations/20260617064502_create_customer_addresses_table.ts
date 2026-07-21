@@ -2,7 +2,7 @@ import type { Knex } from "knex";
 
 
 export async function up(knex: Knex): Promise<void> {
-    await knex.raw(` CREATE TABLE customer_addresses(
+    await knex.raw(` CREATE TABLE customer_customer_address(
         id SERIAL PRIMARY KEY,
         user_id BIGINT NOT NULL,
         label TEXT NOT NULL,
@@ -17,13 +17,13 @@ export async function up(knex: Knex): Promise<void> {
         is_default BOOLEAN NOT NULL,
     
 
-        constraint fk_customer_addresses_user_id FOREIGN KEY (user_id) REFERENCES users(id) on DELETE CASCADE
+        constraint fk_customer_customer_address_user_id FOREIGN KEY (user_id) REFERENCES users(id) on DELETE CASCADE
     );
-    CREATE INDEX idx_customer_addresses_user_id on customer_addresses(user_id);`)
+    CREATE INDEX idx_customer_customer_address_user_id on customer_customer_address(user_id);`)
 }
 
 
 export async function down(knex: Knex): Promise<void> {
-    await knex.raw(`DROP TABLE customer_addresses;`)
+    await knex.raw(`DROP TABLE customer_customer_address;`)
 }
 

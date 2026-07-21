@@ -1,5 +1,6 @@
-import { unAuthorizedError } from "../../../common/auth/error";
-import { db } from "../../../common/knex/knex";
+import { injectable } from "tsyringe";
+import { unAuthorizedError } from "../../../lib/auth/error";
+import { db } from "../../../lib/knex/knex";
 import { BranchNotFound } from "../../branch/error";
 import { findBranchById } from "../../branch/repository/branch.repo";
 import { RestaurantNotFound } from "../../restaurant/error";
@@ -44,7 +45,7 @@ function toBranchDetailsResponse(pbd: any){
     }
 }
 
-
+@injectable()
 export class ProductService{
     findCategories = async(restaurantId:number)=>{
         const restaurant = await findRestaurantById(restaurantId);
@@ -186,5 +187,3 @@ export class ProductService{
     }
         
 }
-
-export const productService = new ProductService();

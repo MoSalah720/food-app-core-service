@@ -1,4 +1,5 @@
-import { unAuthorizedError } from "../../../common/auth/error";
+import { injectable } from "tsyringe";
+import { unAuthorizedError } from "../../../lib/auth/error";
 import { RestaurantNotFound } from "../../restaurant/error";
 import { findRestaurantById } from "../../restaurant/repository/restaurant.repo";
 import { SystemRole } from "../../user/enums";
@@ -25,7 +26,7 @@ function toResponseBranch(branch: any) {
         updatedAt: branch.updatedAt
     };
 }
-
+@injectable()
 export class BranchService{
     findNearby = async(lat:number , lng:number)=>{
         const row = await findNearbyBranches(lat ,lng);
@@ -98,27 +99,16 @@ export class BranchService{
     }
 
     updateStatus = async(data:UpdateBranchStatusDTO  ,userRole:SystemRole , branchId:number)=>{
+         if (userRole !== SystemRole.SYSTEM_ADMIN ) {
+            throw unAuthorizedError;
+        }
+        
         const branch = await findBranchById(branchId);
         if (!branch) {
             throw BranchNotFound;
         }
-       
-        if (userRole !== SystemRole.SYSTEM_ADMIN ) {
-            throw unAuthorizedError;
-        }
-        
-        const updated =await updateBranchStatus(branch.id ,data);
-       
-        return{
-            
-            branch: {
-                    id: updated.id,
-                    isActive: updated.isActive,
-                    acceptOrders: updated.acceptOrders,
-                    commission: updated.commission
-                }
-        }
+     
+        return await updateBranchStatus(branch.id ,data);
+    
     }
 }
-
-export const branchService =new BranchService();

@@ -5,14 +5,12 @@ import { RestaurantStatus } from "../enums";
 import { createRestaurant, findAllRestaurant, findRestaurantById, updataRestaurantStatus, updateRestaurant } from "../repository/restaurant.repo";
 import { RestaurantNotFound, UserMustBeASYSTEMADMIN } from "../error";
 import { CreateRestaurantDTO, UpdateRestaurantDTO, UpdateRestaurantStatusDTO } from "../DTO/restaurantDTO";
-import { createUser, findUserExistByEmailOrPhone } from "../../user/repository/users.repo";
 import { SystemRole } from "../../user/enums";
-import { UserAlreadyExistError } from "../../auth/error";
-import { hashPassword } from "../../auth/utils";
-import { db } from "../../../common/knex/knex";
-import { unAuthorizedError } from "../../../common/auth/error";
-import { userService, UserService } from "../../user/service/user.service";
-import { memberService } from "../../rbac/service/member.service";
+import { db } from "../../../lib/knex/knex";
+import { unAuthorizedError } from "../../../lib/auth/error";
+import { UserService } from "../../user/service/user.service";
+import { injectable, inject } from "tsyringe";
+import { TOKENS } from "../../../lib/di/tokens";
 
 function toResponseOwner(user:any){
     return {
@@ -35,9 +33,11 @@ function toResponseRestaurant(restaurant:any){
         createdAt: restaurant.createdAt,
     }
 }
+
+@injectable()
 export class RestaurantService{
 
-    constructor(private readonly userService:UserService){}
+    constructor(@inject(TOKENS.UserService) private readonly userService:UserService){}
     create = async(userId:number , data:RegisterRestaurantDTO, trx:Knex)=>{
         const now = new Date();
 
@@ -86,10 +86,13 @@ export class RestaurantService{
             },trx)
 
          restaurant =await this.create(user.id,data ,trx);
-            
-            await memberService.createOwnerMember(restaurant.id, user.id, trx)
-            
-            await trx.commit();
+        // resolve from container to avoid circular dependency
+
+         const {container: c} = require("../../../lib/di/container");
+         const {TOKENS: T} = require("../../../lib/di/tokens");
+         const memberSvc = c.resolve(T.MemberService);
+         await memberSvc.createOwnerMember(restaurant.id, user.id, trx);            
+         await trx.commit();
 
             return{
                     message: "Restaurant created successfully",
@@ -112,11 +115,8 @@ export class RestaurantService{
             throw unAuthorizedError;
         }
 
-        const updated = await updateRestaurant(restaurant.id,data);
-        return {
-            message: "restaurant updated successfully",
-            restaurant: toResponseRestaurant(updated)
-        }
+        return await updateRestaurant(restaurant.id,data);
+       
     }
 
     updateStatus =async(data:UpdateRestaurantStatusDTO ,id:number,userRole:SystemRole)=>{
@@ -130,19 +130,8 @@ export class RestaurantService{
             throw RestaurantNotFound;
         }
 
-        const updated = await updataRestaurantStatus(restaurant.id,data.status);
-        return {
-
-            message :"status updated",
-            restaurant:{
-                 id: updated.id,
-            status: updated.status
-
-            }
-           
-        };
+        return await updataRestaurantStatus(restaurant.id,data.status);
+        
     }
 
 }
-
-export const restaurantService = new RestaurantService(userService);

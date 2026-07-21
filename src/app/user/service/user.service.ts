@@ -6,6 +6,7 @@ import { UpdateUserDTO } from "../userDTO/user.DTO";
 import { User } from "../entity/user_entity";
 import { UserAlreadyExistError } from "../../auth/error";
 import { hashPassword } from "../../auth/utils";
+import { injectable } from "tsyringe";
 
 
 export interface CreateUserData{
@@ -15,6 +16,8 @@ export interface CreateUserData{
     password: string;
     systemRole: SystemRole;
 }
+
+@injectable()
 export class UserService{
 
     create = async(data:CreateUserData, trx?: Knex | Knex.Transaction):Promise<User>=>{
@@ -70,5 +73,3 @@ export class UserService{
 
     }
 }
-
-export const userService =new UserService();

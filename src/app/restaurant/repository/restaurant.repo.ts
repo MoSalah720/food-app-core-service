@@ -1,6 +1,6 @@
 import knex, { Knex } from "knex";
 import { Restaurant } from "../entity/restaurant.entity";
-import { db } from "../../../common/knex/knex";
+import { db } from "../../../lib/knex/knex";
 import { RestaurantStatus } from "../enums";
 
 const RESTAURANT_COLUMNS = ['id' , 'owner_id' , 'name' ,'logo_url' , 'status' ,

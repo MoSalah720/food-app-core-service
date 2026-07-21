@@ -1,5 +1,5 @@
 import ro from "zod/v4/locales/ro.js";
-import { db } from "../../../common/knex/knex";
+import { db } from "../../../lib/knex/knex";
 import { Product } from "../entity/product.entity";
 import { Knex } from "knex";
 

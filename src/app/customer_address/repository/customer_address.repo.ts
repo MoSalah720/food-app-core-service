@@ -1,5 +1,5 @@
-import { db } from "../../../common/knex/knex";
-import { CustomerAddress } from "../entity/customer.address.entity";
+import { db } from "../../../lib/knex/knex";
+import { CustomerAddress } from "../entity/customer_address.entity";
 
 const Address_COLUMNS=[
     'id',
@@ -31,15 +31,15 @@ function toEntity(row:any):CustomerAddress{
         isDefault: row.is_default
     })
 }
-export async function findAddressesByUserId(userId:number):Promise<CustomerAddress[]>{
-    const row = await db('customer_addresses')
+export async function findcustomer_addressByUserId(userId:number):Promise<CustomerAddress[]>{
+    const row = await db('customer_customer_address')
     .select(Address_COLUMNS).where('user_id',userId);
 
     return row.map(toEntity);
 }
 
 export async function findAddressById(id:number):Promise<CustomerAddress| undefined>{
-    const row = await db('customer_addresses')
+    const row = await db('customer_customer_address')
     .select(Address_COLUMNS).where('id',id).
     first();
 
@@ -47,7 +47,7 @@ export async function findAddressById(id:number):Promise<CustomerAddress| undefi
 }
 
 export async function createAddress(Address:Partial<CustomerAddress>):Promise<CustomerAddress>{
-    const [row]= await db('customer_addresses').insert({
+    const [row]= await db('customer_customer_address').insert({
         user_id:Address.userId,
         label: Address.label,
         country: Address.country,
@@ -77,7 +77,7 @@ export async function updateAddress(id: number , data: Record<string,any>):Promi
     if (data.lng !== undefined) mapped.lng = data.lng;
     if (data.isDefault !== undefined) mapped.is_default = data.isDefault;
 
-    const [row]= await db('customer_addresses')
+    const [row]= await db('customer_customer_address')
     .update(mapped).where('id',id)
     .returning(Address_COLUMNS);
 
@@ -85,11 +85,11 @@ export async function updateAddress(id: number , data: Record<string,any>):Promi
 }
 
 export async function deleteCustomerAddress(id:number) {
-    await db('customer_addresses').delete().where('id',id);
+    await db('customer_customer_address').delete().where('id',id);
 }
 
-export async function clearDefaultAddresses(userId: number) {
-    await db("customer_addresses")
+export async function clearDefaultcustomer_address(userId: number) {
+    await db("customer_customer_address")
         .where("user_id", userId)
         .where("is_default",true)
         .update({ is_default: false });

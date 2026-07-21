@@ -1,6 +1,7 @@
+import { injectable } from "tsyringe";
 import { CreateAddressDTO, UpdateAddressDTO } from "../DTO/address.DTO";
 import { AddressNotFound } from "../error";
-import { clearDefaultAddresses, createAddress, deleteCustomerAddress, findAddressById, findAddressesByUserId, updateAddress } from "../repository/customer_address.repo";
+import { clearDefaultcustomer_address, createAddress, deleteCustomerAddress, findAddressById, findcustomer_addressByUserId, updateAddress } from "../repository/customer_address.repo";
 
 
  function toResponse(address: any) {
@@ -18,14 +19,15 @@ import { clearDefaultAddresses, createAddress, deleteCustomerAddress, findAddres
         isDefault: address.isDefault
     };
 }
+@injectable()
 export class CustomerAddressService{
     getByUserId = async(userId:number)=>{
-       const addresses =await findAddressesByUserId(userId);
-       return addresses.map(toResponse);
+       const customer_address =await findcustomer_addressByUserId(userId);
+       return customer_address.map(toResponse);
     }
     create = async(data:CreateAddressDTO, userId:number)=>{
         if (data.isDefault) {
-           await clearDefaultAddresses(userId);
+           await clearDefaultcustomer_address(userId);
         }
        const address = await createAddress({userId, ...data});
 
@@ -39,7 +41,7 @@ export class CustomerAddressService{
         }
         
         if (data.isDefault) {
-            await clearDefaultAddresses(userId);
+            await clearDefaultcustomer_address(userId);
         }
 
         const updated = await updateAddress(addressId , data);
@@ -54,6 +56,3 @@ export class CustomerAddressService{
         await deleteCustomerAddress(addressId);
     };
 }
-
-
-export const customerAddressService = new CustomerAddressService();

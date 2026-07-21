@@ -1,22 +1,26 @@
-import { createUser, findUserByEmail, findUserExistByEmailOrPhone, updateUserPassword } from "../../user/repository/users.repo";
+import { findUserByEmail, updateUserPassword } from "../../user/repository/users.repo";
 import { ForgetPasswordDTO, LoginDTO, RegisterDTO, ResetPasswordDTO } from "../dto/auth.dto";
-import { CannotSignUpAsSystemAdmin, IncorrectCredentials, InvalidOTPError, RestaurantDataIsRequiredError, UserAlreadyExistError } from "../error";
+import { CannotSignUpAsSystemAdmin, IncorrectCredentials, InvalidOTPError, RestaurantDataIsRequiredError } from "../error";
 import { createAccessToken, createRefreshToken, generateOTP, hashOTP, hashPassword, varifyRefreshToken } from "../utils";
 import { SystemRole } from "../../user/enums";
 import { compare } from "bcrypt";
 import { createPasswordResets, findLatestPasswordResetByUserId, updatePasswordResetConsumedAt } from "../repository/password_reset.repo";
-import { restaurantService, RestaurantService } from "../../restaurant/service/restaurant.service";
-import { db } from "../../../common/knex/knex";
+import { RestaurantService } from "../../restaurant/service/restaurant.service";
+import { db } from "../../../lib/knex/knex";
 import { activateMemberByUserId, findRestaurantMemberWithRole } from "../../rbac/repository/restaurant_member.repo";
 import { findBranchIdsByMemberId } from "../../rbac/repository/member_branch.repo";
 import { MemberNotFound } from "../../rbac/errors";
-import { memberService, MemberService } from "../../rbac/service/member.service";
-import { userService, UserService } from "../../user/service/user.service";
+import { MemberService } from "../../rbac/service/member.service";
+import { UserService } from "../../user/service/user.service";
+import { injectable, inject } from "tsyringe";
+import { TOKENS } from "../../../lib/di/tokens";
 
+
+@injectable()
 export class AuthService{
-    constructor(private readonly restaurantService:RestaurantService,
-        private readonly memberService:MemberService,
-        private readonly userService :UserService
+    constructor(@inject(TOKENS.RestaurantService) private readonly restaurantService:RestaurantService,
+        @inject(TOKENS.MemberService) private readonly memberService:MemberService,
+        @inject(TOKENS.UserService) private readonly userService :UserService
     ){}
     register = async(data :RegisterDTO)=>{
 
@@ -200,5 +204,3 @@ export class AuthService{
         await activateMemberByUserId(user.id);
     }
 }
-
-export const authService = new AuthService(restaurantService,memberService,userService);

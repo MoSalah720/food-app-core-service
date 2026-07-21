@@ -1,11 +1,15 @@
 import { NextFunction, Request, Response } from "express";
-import { branchService, BranchService } from "../service/branch.service";
-import { validateBody } from "../../../common/validation/validate";
+import { BranchService } from "../service/branch.service";
+import { validateBody } from "../../../lib/validation/validate";
 import { CreateBranchDTO, UpdateBranchDTO, UpdateBranchStatusDTO } from "../DTO/branch..DTO";
 import { SystemRole } from "../../user/enums";
+import { injectable, inject } from "tsyringe";
+import { TOKENS } from "../../../lib/di/tokens";
+import { sendSuccess } from "../../../lib/http/response";
 
+@injectable()
 export class BranchController{
-    constructor(private readonly branchService: BranchService){
+    constructor( @inject(TOKENS.BranchService) private readonly branchService: BranchService){
 
     }
 
@@ -14,8 +18,7 @@ export class BranchController{
             const restaurantId = Number(req.params.restaurantId)
             const data = await validateBody(CreateBranchDTO,req.body);
             const branch = await this.branchService.create(restaurantId,req.user?.userId!,  req.user?.role! as SystemRole, data);
-            res.status(201).json({message:"Branch added", branch});
-            
+            sendSuccess(res,{message:"branch created", branch},201);            
         } catch (err) {
             next(err);
         }
@@ -24,8 +27,7 @@ export class BranchController{
     findNearby = async(req:Request , res:Response ,next:NextFunction)=>{
         try {
             const results = await this.branchService.findNearby(Number(req.query.lat), Number(req.query.lng));
-            res.status(200).json({data: results});
-            
+            sendSuccess(res, results)
         } catch (err) {
             next(err);
         }
@@ -33,7 +35,7 @@ export class BranchController{
     findByRestaurant= async(req:Request , res:Response ,next:NextFunction)=>{
         try {
             const results = await this.branchService.findByRestaurant(Number(req.params.restaurantId));
-            res.status(200).json({data: results});
+            sendSuccess(res, results)
             
         } catch (err) {
             next(err);
@@ -45,7 +47,7 @@ export class BranchController{
             const branchId = Number(req.params.id)
             const data = await validateBody(UpdateBranchDTO,req.body);
             const updated = await this.branchService.update(data,req.user?.userId!,  req.user?.role! as SystemRole, branchId);
-            res.status(200).json({message:"branch  updated successfully", branch : updated});
+            sendSuccess(res,{message:"branch  updated successfully", branch : updated});
             
         } catch (err) {
             next(err);
@@ -56,8 +58,8 @@ export class BranchController{
         try {
             const branchId = Number(req.params.id)
             const data = await validateBody(UpdateBranchStatusDTO,req.body);
-            const updatedStatus = await this.branchService.updateStatus(data,  req.user?.role! as SystemRole, branchId);
-            res.status(200).json({message:"branch status updated successfully", branch : updatedStatus});
+            const branch = await this.branchService.updateStatus(data,  req.user?.role! as SystemRole, branchId);
+            sendSuccess(res,{message:"branch status updated successfully", branch: {id:branch.id , isActive: branch.isActive, acceptOrders: branch.acceptOrders, commission: branch.commission}});
             
         } catch (err) {
             next(err);
@@ -65,5 +67,3 @@ export class BranchController{
     }
 
 }
-
-export const branchController = new BranchController(branchService);

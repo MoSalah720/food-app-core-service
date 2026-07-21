@@ -1,11 +1,15 @@
-import { NextFunction , Request , Response } from "express";
-import { memberService, MemberService } from "../service/member.service";
-import { validateBody } from "../../../common/validation/validate";
+import { NextFunction, Request, Response } from "express";
+import { MemberService } from "../service/member.service";
+import { validateBody } from "../../../lib/validation/validate";
 import { CreateMemberDTO, UpdateMemberBranchesDTO, UpdateMemberDTO } from "../DTO/member.dto";
-import th from "zod/v4/locales/th.js";
+import { injectable, inject } from "tsyringe";
+import { TOKENS } from "../../../lib/di/tokens";
+import { sendSuccess } from "../../../lib/http/response";
 
+
+@injectable()
 export class MemberController {
-    constructor(private readonly memberService: MemberService) {
+    constructor( @inject(TOKENS.MemberService) private readonly memberService: MemberService) {
 
     }
 
@@ -13,7 +17,7 @@ export class MemberController {
         try {
             const data = await validateBody(CreateMemberDTO, req.body);
             const result = await this.memberService.createMember(Number(req.params.restaurantId), data);
-            res.status(201).json(result);
+            sendSuccess(res,result,201);
             
         } catch (err) {
             next(err);
@@ -23,7 +27,7 @@ export class MemberController {
     listMembers =async(req:Request, res:Response, next:NextFunction)=>{
         try {
             const member = await this.memberService.listMembers(Number(req.params.restaurantId));
-            res.status(200).json(member)
+            sendSuccess(res,member)
         } catch (err) {
             next(err);
         }
@@ -33,7 +37,7 @@ export class MemberController {
             const data = await validateBody(UpdateMemberDTO, req.body);
             const result = await this.memberService.updateMember(Number(req.params.restaurantId)
             ,Number(req.params.memberId), data);
-            res.status(200).json(result);
+            sendSuccess(res,result);
             
         } catch (err) {
             next(err);
@@ -43,7 +47,7 @@ export class MemberController {
         try {
             const result = await this.memberService.deleteMember(Number(req.params.restaurantId)
             ,Number(req.params.memberId));
-            res.status(200).json(result);
+            sendSuccess(res,result);
             
         } catch (err) {
             next(err);
@@ -54,7 +58,7 @@ export class MemberController {
             const data = await validateBody(UpdateMemberBranchesDTO, req.body);
             const result = await this.memberService.updateMemberBranches(Number(req.params.restaurantId)
             ,Number(req.params.memberId), data);
-            res.status(200).json(result);
+            sendSuccess(res,result);
             
         } catch (err) {
             next(err);
@@ -63,10 +67,9 @@ export class MemberController {
      getRolePermissions =async(req:Request, res:Response, next:NextFunction)=>{
         try {
             const result = await this.memberService.getRolePermissions(req.params.role as string);
-            res.status(200).json(result)
+            sendSuccess(res,result)
         } catch (err) {
             next(err);
         }
     }
 }
-export const memberController = new MemberController(memberService); 

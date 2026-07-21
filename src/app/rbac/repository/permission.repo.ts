@@ -1,6 +1,6 @@
 import { Knex } from "knex";
 import { Permission } from "../entity/permission.entity";
-import { db } from "../../../common/knex/knex";
+import { db } from "../../../lib/knex/knex";
 import { permission } from "node:process";
 
 function toEntity(row: any): Permission {

@@ -1,8 +1,7 @@
-import { memoryUsage } from "node:process";
-import { db } from "../../../common/knex/knex";
+import { db } from "../../../lib/knex/knex";
 import { UserAlreadyExistError } from "../../auth/error";
 import { SystemRole } from "../../user/enums";
-import { createUser, findUserByEmail } from "../../user/repository/users.repo";
+import { findUserByEmail } from "../../user/repository/users.repo";
 import { CreateMemberDTO, UpdateMemberBranchesDTO, UpdateMemberDTO } from "../DTO/member.dto";
 import { CannotCreateOwnerUserError, CannotDeleteOwnerError, MemberNotFoundError, RoleNotFoundError } from "../errors";
 import { createRestaurantMember, deleteMember, findMembersByRestaurantId, findMemberWithRoleName, updateMember } from "../repository/restaurant_member.repo";
@@ -12,17 +11,19 @@ import { MemberBranch } from "../entity/member_branch";
 import { countBranchesByIdsAndRestaurant, setMemberBranches } from "../repository/member_branch.repo";
 import { createPasswordResets } from "../../auth/repository/password_reset.repo";
 import { generateOTP, hashOTP } from "../../auth/utils";
-import { toMS } from "../../../common/utils/time";
+import { toMS } from "../../../pkg/utils/time";
 import { Knex } from "knex";
 import { RestaurantMember } from "../entity/restaurant_member.entity";
-import { AppError } from "../../../common/error/AppError";
+import { AppError } from "../../../lib/error/AppError";
 import { getPermissionsDetailsByRoleName } from "../repository/permission.repo";
-import { inject } from "tsyringe";
-import { userService, UserService } from "../../user/service/user.service";
+import { inject, injectable } from "tsyringe";
+import { UserService } from "../../user/service/user.service";
+import { TOKENS } from "../../../lib/di/tokens";
 
+@injectable()
 export class MemberService{
 
-    constructor(private readonly userService: UserService) {}
+    constructor(@inject(TOKENS.UserService) private readonly userService: UserService) {}
     async createOwnerMember (restaurantId:number , userId: number , trx?: Knex.Transaction):Promise<RestaurantMember>{
         const ownerRoleId = await findRoleByName('owner',trx);
         if(!ownerRoleId) throw RoleNotFoundError;
@@ -182,5 +183,3 @@ export class MemberService{
     }
 
 }
-
-export const memberService = new MemberService(userService);
