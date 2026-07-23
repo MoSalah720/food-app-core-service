@@ -3,7 +3,7 @@ import { UserAlreadyExistError } from "../../auth/error";
 import { SystemRole } from "../../user/enums";
 import { findUserByEmail } from "../../user/repository/users.repo";
 import { CreateMemberDTO, UpdateMemberBranchesDTO, UpdateMemberDTO } from "../DTO/member.dto";
-import { CannotCreateOwnerUserError, CannotDeleteOwnerError, MemberNotFoundError, RoleNotFoundError } from "../errors";
+import { CannotCreateOwnerUserError, CannotDeleteOwnerError, invalidBranchIdsError, MemberNotFoundError, RoleNotFoundError } from "../errors";
 import { createRestaurantMember, deleteMember, findMembersByRestaurantId, findMemberWithRoleName, updateMember } from "../repository/restaurant_member.repo";
 import { findRoleByName } from "../repository/role.repo";
 import { MemberStatus } from "../enums";
@@ -171,7 +171,7 @@ export class MemberService{
         if(branchIds.length === 0 ) return;
          const count = await countBranchesByIdsAndRestaurant(branchIds,restaurantId);
         if (count !== branchIds.length) {
-            throw new AppError("some branches don't belong to this restaurant",400)
+            throw invalidBranchIdsError;
         }
     }
     async getRolePermissions(roleName:string){

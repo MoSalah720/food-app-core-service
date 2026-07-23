@@ -11,6 +11,7 @@ import { unAuthorizedError } from "../../../lib/auth/error";
 import { UserService } from "../../user/service/user.service";
 import { injectable, inject } from "tsyringe";
 import { TOKENS } from "../../../lib/di/tokens";
+import { PaginationParams, FilterParams, buildPaginationResult } from "../../../lib/http/pagination/cursor_pagination";
 
 function toResponseOwner(user:any){
     return {
@@ -57,9 +58,9 @@ export class RestaurantService{
         return result;
     }
 
-    findAll = async()=>{
-        const result = await findAllRestaurant();
-        return result;
+    findAll = async(params:PaginationParams , filters: FilterParams[])=>{
+        const result = await findAllRestaurant(params , filters);
+        return buildPaginationResult(result , params.limit , params.sortBy);
     }
 
     findById = async(id : number)=>{

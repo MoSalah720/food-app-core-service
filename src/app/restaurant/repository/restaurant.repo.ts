@@ -2,6 +2,8 @@ import knex, { Knex } from "knex";
 import { Restaurant } from "../entity/restaurant.entity";
 import { db } from "../../../lib/knex/knex";
 import { RestaurantStatus } from "../enums";
+import { applyCursorPagination, applyFilters, FilterParams, PaginationParams } from "../../../lib/http/pagination/cursor_pagination";
+import { FilterEnum } from "zod/v3";
 
 const RESTAURANT_COLUMNS = ['id' , 'owner_id' , 'name' ,'logo_url' , 'status' ,
     'primary_country' ,  'created_at', 'updated_at','status_updated_at'
@@ -21,9 +23,12 @@ function toEntity(row:any):Restaurant {
     });
 }
 
-export async function findAllRestaurant():Promise<Restaurant[]> {
-    const row = await db('restaurants').select(RESTAURANT_COLUMNS);
-    return row.map(toEntity);
+export async function findAllRestaurant(params:PaginationParams , filters: FilterParams[]):Promise<Restaurant[]> {
+    let query =  db('restaurants').select(RESTAURANT_COLUMNS);
+    query = applyFilters(query , filters);
+    query = applyCursorPagination(query , params);
+    const rows = await query; 
+    return rows.map(toEntity);
 }
 
 

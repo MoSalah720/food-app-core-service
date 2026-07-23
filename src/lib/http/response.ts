@@ -1,4 +1,5 @@
 import { Response } from "express";
+import { PaginationMeta } from "./pagination/cursor_pagination";
 
 export interface ApiResponse<T= unknown> {
     success: boolean;
@@ -6,11 +7,7 @@ export interface ApiResponse<T= unknown> {
     meta?: object;
 }
 
-export interface PaginationMeta{
-    nextCursor: number|null;
-    hasMore: boolean;
-    count: number;
-}
+
 
 export function sendSuccess<T>(res: Response, data: T,statusCode =200, meta?: object): void {
     const body: ApiResponse<T> = {success: true, data};
@@ -19,6 +16,6 @@ export function sendSuccess<T>(res: Response, data: T,statusCode =200, meta?: ob
     res.status(statusCode).json(body);
 }
 
-export function sendPagination<T>(res: Response, data: T[], meta: PaginationMeta): void {
+export function sendPaginated<T>(res: Response, data: T[], meta: PaginationMeta): void {
     res.status(200).json({success: true, data, meta});
 }

@@ -5,4 +5,5 @@ export const RoleNotFoundError = new AppError('Role not found', 404);
 export const MemberNotFound = new AppError('member nor found', 404);
 export const MemberNotFoundError = new AppError('Member not found', 404); 
 export const CannotDeleteOwnerError = new AppError('Cannot delete the restaurant owner', 400); 
+export const invalidBranchIdsError =  new AppError("some branches don't belong to this restaurant",400)
 
