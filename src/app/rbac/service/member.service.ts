@@ -19,11 +19,17 @@ import { getPermissionsDetailsByRoleName } from "../repository/permission.repo";
 import { inject, injectable } from "tsyringe";
 import { UserService } from "../../user/service/user.service";
 import { TOKENS } from "../../../lib/di/tokens";
+import { IEmailProvider } from "../../../pkg/email/email.interface";
+import { memberInvitationEmail } from "../templates/member_invitation";
 
 @injectable()
 export class MemberService{
 
-    constructor(@inject(TOKENS.UserService) private readonly userService: UserService) {}
+    constructor(
+        @inject(TOKENS.UserService) private readonly userService: UserService,
+        @inject(TOKENS.EmailProvider) private readonly emailProvider: IEmailProvider
+        
+    ) {}
     async createOwnerMember (restaurantId:number , userId: number , trx?: Knex.Transaction):Promise<RestaurantMember>{
         const ownerRoleId = await findRoleByName('owner',trx);
         if(!ownerRoleId) throw RoleNotFoundError;
@@ -92,8 +98,8 @@ export class MemberService{
                 createdAt:new Date()
             },trx);
 
-            console.log(`mocked email sent ${otp}`)
-
+            const email = memberInvitationEmail(otp,data.role);
+            await this.emailProvider.send(data.email, email.subject, email.html);
             await trx.commit();
              return {
             message: "Invitation sent successfully",

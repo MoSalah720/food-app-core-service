@@ -23,5 +23,7 @@ export const TOKENS = {
     //lib/ infra 
     Logger: Symbol.for('Logger'),
 
-    CacheProvider: Symbol.for('CacheProvider')
+    CacheProvider: Symbol.for('CacheProvider'),
+    EmailProvider:Symbol.for('EmailProvider')    
+
 }

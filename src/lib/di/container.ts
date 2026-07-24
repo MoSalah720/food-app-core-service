@@ -25,6 +25,7 @@ import { MemberController } from "../../app/rbac/controller/member.controller";
 import { RestaurantController } from "../../app/restaurant/controller/restaurant.controller";
 import { UserController } from "../../app/user/controller/user.controller";
 import { cacheProvider } from "../cache/init";
+import { emailProvider } from "../email/init";
 
 container.registerSingleton<UserService>(TOKENS.UserService, UserService);
 container.registerSingleton<RestaurantService>(TOKENS.RestaurantService, RestaurantService);
@@ -45,5 +46,6 @@ container.registerSingleton<CustomerAddressController>(TOKENS.CustomerAddressCon
 container.registerSingleton<AuthController>(TOKENS.AuthController, AuthController);
 
 container.registerInstance(TOKENS.CacheProvider,cacheProvider);
+container.registerInstance(TOKENS.EmailProvider,emailProvider);
 
 export {container};
