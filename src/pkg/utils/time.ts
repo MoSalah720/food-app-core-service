@@ -10,3 +10,7 @@ const multiPliers :Record<TimeUnit,number> ={
 export function toMS(value:number , unit: TimeUnit){
     return value * multiPliers[unit];
 }
+
+export function toSecond(value:number, unit:TimeUnit) {
+    return toMS(value,unit)/ 1000;
+}
