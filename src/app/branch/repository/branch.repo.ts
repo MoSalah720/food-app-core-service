@@ -95,9 +95,20 @@ export async function findNearbyBranches(lat:number, lng:number): Promise<any[]>
         where b.is_active = true AND r.status ='active'
         AND ST_DWITHIN(b.location , ST_MAKEPOINT(?,?)::geography , b.delivery_radius*1000)
         `,[lng,lat]);
-        return result.rows
-    
-}
+        return result.rows.map((row:any)=>({
+            id: row.id,
+            restaurantId: row.restaurant_id,
+            addressText: row.address_text,
+            label: row.label,
+            lat: row.lat,
+            lng: row.lng,
+            isActive: row.is_active,
+            acceptOrders: row.accept_orders,
+            currency: row.currency,
+            restaurantName: row.name,
+            restaurantLogo: row.logo_url
+        }));
+    }
 
 export async function updateBranch(id:number , data:Record<string,any>):Promise<Branch> {
     const mapped: Record<string,any> ={};
