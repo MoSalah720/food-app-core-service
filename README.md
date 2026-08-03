@@ -1,48 +1,41 @@
-Food App Core Service
-A high-performance backend microservice for a food ordering platform built with Node.js and TypeScript. The project follows clean architecture principles and implements Event-Driven Communication, Pessimistic Locking for stock concurrency, and the Transactional Outbox Pattern to ensure reliable event publishing to RabbitMQ.
+# Food App Core Service
 
-✨ Features
-Event-Driven Architecture: Transactional Outbox Pattern for reliable message publishing via RabbitMQ.
+A high-performance backend microservice for a food ordering platform built with **Node.js** and **TypeScript**. The project follows clean architecture principles and implements **Event-Driven Communication**, **Pessimistic Locking** for stock concurrency, and the **Transactional Outbox Pattern** to ensure reliable event publishing to RabbitMQ.
 
-Concurrency Protection: Stock reservation using PostgreSQL Pessimistic Locking (FOR UPDATE).
+---
 
-Distributed Background Workers: Horizontally scalable outbox workers using FOR UPDATE SKIP LOCKED.
+## ✨ Features
 
-Authentication & Authorization: JWT-based Auth with Role-Based Access Control (RBAC).
+- **Event-Driven Architecture**: Transactional Outbox Pattern for reliable message publishing via RabbitMQ.
+- **Concurrency Protection**: Stock reservation using PostgreSQL Pessimistic Locking (`FOR UPDATE`).
+- **Distributed Background Workers**: Horizontally scalable outbox workers using `FOR UPDATE SKIP LOCKED`.
+- **Authentication & Authorization**: JWT-based Auth with Role-Based Access Control (RBAC).
+- **Customer Address Management**: Multi-address management for customers.
+- **Restaurant & Branch Management**: Full CRUD and hierarchical management.
+- **Product & Inventory Control**: Product management with real-time stock updates.
+- **Member Invitation System**: Role-based team member invites.
+- **Password Reset**: Secure reset flow with Email OTP.
+- **Advanced Querying**: Dynamic Filtering and Cursor-based Pagination.
+- **Performance & Safety**: Redis Caching and Idempotency Middleware.
+- **Clean Architecture**: Dependency Injection and Repository Pattern.
 
-Customer Address Management: Multi-address management for customers.
+---
 
-Restaurant & Branch Management: Full CRUD and hierarchical management.
+## 🛠 Tech Stack
 
-Product & Inventory Control: Product management with real-time stock updates.
+- **Runtime & Language**: Node.js, TypeScript
+- **Framework**: Express.js
+- **Database & ORM**: PostgreSQL, Knex.js
+- **Message Broker**: RabbitMQ (`amqplib` & `amqp-connection-manager`)
+- **Caching & In-Memory**: Redis (`ioredis`)
+- **Scheduling**: Croner
+- **Security & Mail**: JWT, Mailjet
 
-Member Invitation System: Role-based team member invites.
+---
 
-Password Reset: Secure reset flow with Email OTP.
+## 📂 Project Structure
 
-Advanced Querying: Dynamic Filtering and Cursor-based Pagination.
-
-Performance & Safety: Redis Caching and Idempotency Middleware.
-
-Clean Architecture: Dependency Injection and Repository Pattern.
-
-🛠 Tech Stack
-Runtime & Language: Node.js, TypeScript
-
-Framework: Express.js
-
-Database & ORM: PostgreSQL, Knex.js
-
-Message Broker: RabbitMQ (amqplib & amqp-connection-manager)
-
-Caching & In-Memory: Redis (ioredis)
-
-Scheduling: Croner
-
-Security & Mail: JWT, Mailjet
-
-📂 Project Structure
-Plaintext
+```text
 src
 ├── app
 │   ├── auth
@@ -64,16 +57,14 @@ src
 └── server.ts
 🚀 Getting Started
 Clone the repository
-Bash
-git clone https://github.com/MoSalah720/food-app-core-service.git
+git clone [https://github.com/MoSalah720/food-app-core-service.git](https://github.com/MoSalah720/food-app-core-service.git)
 cd food-app-core-service
+
 Install dependencies
-Bash
 npm install
+
 Configure environment variables
 Create a .env file and configure:
-
-Code snippet
 # Database & Cache
 DATABASE_URL=
 REDIS_HOST=127.0.0.1
@@ -93,13 +84,14 @@ MAILJET_API_KEY=
 MAILJET_SECRET_KEY=
 MAILJET_FROM_EMAIL=
 MAILJET_FROM_NAME=
+
 Run the project
-Bash
 # Run HTTP API Server
 npm run dev
 
 # Run Outbox Worker Process (In a separate terminal)
 npm run worker:dev
+
 🏗 Architecture & Patterns
 This project bridges Layered Architecture with Event-Driven Microservices:
 
@@ -133,9 +125,9 @@ CI/CD Pipeline
 
 API Documentation (Swagger / OpenAPI)
 
-👨‍💻 Author
-Mohamed Salah
+## 👨‍💻 Author
 
-GitHub: MoSalah720
+**Mohamed Salah**
 
-LinkedIn: Mohamed Salah
+- **GitHub:** https://github.com/MoSalah720
+- **LinkedIn:** https://www.linkedin.com/in/mohamed-salah-889291168
