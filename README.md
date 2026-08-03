@@ -1,45 +1,48 @@
-# Food App Core Service
+Food App Core Service
+A high-performance backend microservice for a food ordering platform built with Node.js and TypeScript. The project follows clean architecture principles and implements Event-Driven Communication, Pessimistic Locking for stock concurrency, and the Transactional Outbox Pattern to ensure reliable event publishing to RabbitMQ.
 
-A backend microservices core service for a food ordering platform built with **Node.js** and **TypeScript**. The project follows clean architecture principles and provides authentication, authorization, RBAC, restaurant management, customer management, Redis caching, cursor pagination, email integration, and idempotency support.
+✨ Features
+Event-Driven Architecture: Transactional Outbox Pattern for reliable message publishing via RabbitMQ.
 
----
+Concurrency Protection: Stock reservation using PostgreSQL Pessimistic Locking (FOR UPDATE).
 
-## ✨ Features
+Distributed Background Workers: Horizontally scalable outbox workers using FOR UPDATE SKIP LOCKED.
 
-- Authentication & Authorization
-- Role-Based Access Control (RBAC)
-- Customer Address Management
-- Restaurant Management
-- Branch Management
-- Product Management
-- Member Invitation
-- Password Reset with Email OTP
-- Dynamic Filtering
-- Cursor Pagination
-- Redis Caching
-- Idempotency Middleware
-- Dependency Injection
-- Repository Pattern
+Authentication & Authorization: JWT-based Auth with Role-Based Access Control (RBAC).
 
----
+Customer Address Management: Multi-address management for customers.
 
-## 🛠 Tech Stack
+Restaurant & Branch Management: Full CRUD and hierarchical management.
 
-- Node.js
-- TypeScript
-- Express.js
-- PostgreSQL
-- Redis
-- Knex.js
-- JWT
-- Mailjet
-- Git
+Product & Inventory Control: Product management with real-time stock updates.
 
----
+Member Invitation System: Role-based team member invites.
 
-## 📂 Project Structure
+Password Reset: Secure reset flow with Email OTP.
 
-```text
+Advanced Querying: Dynamic Filtering and Cursor-based Pagination.
+
+Performance & Safety: Redis Caching and Idempotency Middleware.
+
+Clean Architecture: Dependency Injection and Repository Pattern.
+
+🛠 Tech Stack
+Runtime & Language: Node.js, TypeScript
+
+Framework: Express.js
+
+Database & ORM: PostgreSQL, Knex.js
+
+Message Broker: RabbitMQ (amqplib & amqp-connection-manager)
+
+Caching & In-Memory: Redis (ioredis)
+
+Scheduling: Croner
+
+Security & Mail: JWT, Mailjet
+
+📂 Project Structure
+Plaintext
 src
 ├── app
 │   ├── auth
@@ -50,110 +53,89 @@ src
 │   ├── restaurant
 │   └── user
 ├── lib
+│   ├── config
+│   ├── events         # Outbox pattern & RabbitMQ handlers
+│   ├── knex
+│   ├── logger
+│   └── redis
 ├── pkg
 ├── routes
-├── config
+├── worker.ts          # Independent Outbox Drain Worker process
 └── server.ts
-```
-
----
-
-## 🚀 Getting Started
-
-### Clone the repository
-
-```bash
-git clone https://github.com/MoSalah720/Food-App-Core-Service.git
-```
-
-```bash
-cd Food-App-Core-Service
-```
-
-### Install dependencies
-
-```bash
+🚀 Getting Started
+Clone the repository
+Bash
+git clone https://github.com/MoSalah720/food-app-core-service.git
+cd food-app-core-service
+Install dependencies
+Bash
 npm install
-```
+Configure environment variables
+Create a .env file and configure:
 
-### Configure environment variables
-
-Create a `.env` file and configure:
-
-```env
+Code snippet
+# Database & Cache
 DATABASE_URL=
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
 
-REDIS_HOST=
-REDIS_PORT=
-
+# JWT
 JWT_SECRET=
 
+# RabbitMQ
+RABBITMQ_URL=amqp://localhost:5672
+RABBITMQ_EXCHANGE=core_events
+DRAIN_CRON=*/5 * * * * *
+DRAIN_BATCH_SIZE=50
+
+# Mailjet
 MAILJET_API_KEY=
 MAILJET_SECRET_KEY=
 MAILJET_FROM_EMAIL=
 MAILJET_FROM_NAME=
-```
-
-### Run the project
-
-```bash
+Run the project
+Bash
+# Run HTTP API Server
 npm run dev
-```
 
----
+# Run Outbox Worker Process (In a separate terminal)
+npm run worker:dev
+🏗 Architecture & Patterns
+This project bridges Layered Architecture with Event-Driven Microservices:
 
-## 📌 Main Modules
+Layered Structure: Controllers → Services → Repositories → Data Access / Infrastructure.
 
-- Authentication
-- Users
-- Members
-- Restaurants
-- Branches
-- Products
-- Customer Addresses
+Transactional Outbox Pattern: Guarantees at-least-once message delivery. Domain mutations and event writes happen atomically within the same database transaction.
 
----
+Race Condition Prevention: Employs FOR UPDATE queries during stock updates to prevent inventory overdrafts under heavy concurrency.
 
-## 🏗 Architecture
+Safe Parallel Processing: Worker processes utilize FOR UPDATE SKIP LOCKED so multiple instances can poll and process outbox batches without duplicate publishing.
 
-This project follows a layered architecture:
+🔐 Core Infrastructure Features
+Publisher Confirms: RabbitMQ publishes await broker acknowledgment before marking events as dispatched.
 
-- Controllers
-- Services
-- Repositories
-- Dependency Injection
-- PostgreSQL
-- Redis
+Graceful Shutdown: Intercepts SIGINT/SIGTERM to gracefully drain outbox tasks, stop cron jobs, and safely close database and broker connections.
 
-The codebase is organized to keep business logic separated from infrastructure and data access layers.
+Redis Cache: Low-latency query caching and session management.
 
----
+Cursor Pagination & Dynamic Filters: Efficient data retrieval for high-volume endpoints.
 
-## 🔐 Backend Features
+Idempotency Middleware: Prevents duplicate mutations from retried network calls.
 
-- JWT Authentication
-- Role-Based Authorization (RBAC)
-- Password Reset via Email OTP
-- Redis Cache
-- Cursor Pagination
-- Dynamic Filtering
-- Idempotency Middleware
+🔮 Future Improvements
+Docker & Docker Compose setup
 
----
+Dead Letter Queues (DLQ) for failed outbox events
 
-## 🔮 Future Improvements
+Unit & Integration Testing (Jest)
 
-- Docker Support
-- Unit Testing
-- CI/CD Pipeline
-- API Documentation (Swagger)
-- Event-Driven Communication
+CI/CD Pipeline
 
----
+API Documentation (Swagger / OpenAPI)
 
-## 👨‍💻 Author
+👨‍💻 Author
+Mohamed Salah
 
-**Mohamed Salah**
+GitHub: MoSalah720
 
-- GitHub: https://github.com/MoSalah720
-- LinkedIn: https://www.linkedin.com/in/mohamed-salah-889291168
+LinkedIn: Mohamed Salah
