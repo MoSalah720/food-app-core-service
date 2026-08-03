@@ -12,6 +12,8 @@ import { UserService } from "../../user/service/user.service";
 import { injectable, inject } from "tsyringe";
 import { TOKENS } from "../../../lib/di/tokens";
 import { PaginationParams, FilterParams, buildPaginationResult } from "../../../lib/http/pagination/cursor_pagination";
+import { EVENT_TYPES } from "../../../lib/events/event_types";
+import { insertOutBoxEvent } from "../../../lib/events/outbox.repo";
 
 function toResponseOwner(user:any){
     return {
@@ -131,8 +133,24 @@ export class RestaurantService{
             throw RestaurantNotFound;
         }
 
-        return await updataRestaurantStatus(restaurant.id,data.status);
-        
+ const trx = await db.transaction();
+        try {
+            const updated = await updataRestaurantStatus(id, data.status, trx);
+            if (data.status === "suspended") {
+                await insertOutBoxEvent(trx, {
+                    aggregateType: "restaurants",
+                    aggregateId: id,
+                    eventType: EVENT_TYPES.RESTAURANT_SUSPENDED,
+                    payload: {restaurantId: id},
+                });
+            }
+            await trx.commit();
+            return updated;
+        } catch (err) {
+            await trx.rollback();
+            throw err;
+        }
+            
     }
 
 }

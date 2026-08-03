@@ -4,6 +4,7 @@ import { authenticate } from "../../lib/auth/guard";
 import { rbac, requireBranchAccess, requireRestaurantMember } from "../../lib/auth/rbac";
 import { container } from "../../lib/di/container";
 import { TOKENS } from "../../lib/di/tokens";
+import { requireInternalApiKey } from "../../lib/auth/api-key";
 
 export const productRouter =Router();
 
@@ -31,3 +32,6 @@ productRouter.patch('/products/:id',
     rbac({resource:'core:product',action:'update'}) ,
     productController.update);
 
+// Internal (service-to-service)
+productRouter.get('/internal/branches/:id/products', requireInternalApiKey, productController.findByBranchAndIds);
+productRouter.post('/internal/branches/:id/reserve-stock', requireInternalApiKey, productController.reserveStock);

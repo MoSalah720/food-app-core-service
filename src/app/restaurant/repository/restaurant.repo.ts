@@ -70,8 +70,8 @@ export async function updateRestaurant(id:number, data: Record<string,any>):Prom
 
 }
 
-export async function updataRestaurantStatus(id:number, status:RestaurantStatus): Promise<Restaurant>{
-    const [row] =await db('restaurants').update({
+export async function updataRestaurantStatus(id:number, status:RestaurantStatus , conn:Knex=db): Promise<Restaurant>{
+    const [row] =await conn('restaurants').update({
         status:status,
         updated_at:new Date(),
          status_updated_at:new Date()

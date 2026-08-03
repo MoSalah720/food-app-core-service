@@ -6,6 +6,10 @@ import { SystemRole } from "../../user/enums";
 import { CreateBranchDTO, UpdateBranchDTO, UpdateBranchStatusDTO } from "../DTO/branch..DTO";
 import { BranchNotFound } from "../error";
 import { createBranch, findBranchById, findBranchesByRestaurant, findNearbyBranches, updateBranch, updateBranchStatus } from "../repository/branch.repo"
+import { db } from "../../../lib/knex/knex";
+import { insertOutBoxEvent } from "../../../lib/events/outbox.repo";
+import { EVENT_TYPES } from "../../../lib/events/event_types";
+import { BranchWithRestaurant } from "../types";
 
 function toResponseBranch(branch: any) {
     return {
@@ -79,7 +83,12 @@ export class BranchService{
             data: branches.map(toResponseBranch)
         }
     }
-    
+    findByIdWithRestaurant = async (branchId: number): Promise<BranchWithRestaurant | null> => {
+        const branch = await findBranchById(branchId);
+        if (!branch) return null;
+        const restaurant = await findRestaurantById(branch.restaurantId);
+        return {branch, restaurantStatus: restaurant?.status ?? "unknown"};
+    }
     update = async(data:UpdateBranchDTO , userId:number ,userRole:SystemRole , branchId:number)=>{
         const branch = await findBranchById(branchId);
         if (!branch) {
@@ -90,12 +99,22 @@ export class BranchService{
         if (userRole !== SystemRole.SYSTEM_ADMIN && restaurant?.ownerId !== userId) {
             throw unAuthorizedError;
         }
-        
-        const updated =await updateBranch(branch.id ,data);
-       
-        return{
-            branch: toResponseBranch(updated)
+        const trx = await db.transaction()
+        try {
+            const updated =await updateBranch(branch.id ,data , trx);
+            await insertOutBoxEvent(trx,{
+                aggregateType: "restaurant_branches",
+                aggregateId: branchId,
+                eventType: EVENT_TYPES.BRANCH_UPDATED,
+                payload: {branchId}
+            });
+            await trx.commit();
+            return updated;
+        } catch (err) {
+            await trx.rollback();
+            throw err;
         }
+       
     }
 
     updateStatus = async(data:UpdateBranchStatusDTO  ,userRole:SystemRole , branchId:number)=>{
@@ -107,8 +126,24 @@ export class BranchService{
         if (!branch) {
             throw BranchNotFound;
         }
-     
-        return await updateBranchStatus(branch.id ,data);
+        const trx = await db.transaction();
+        try {
+            const updated= await updateBranchStatus(branch.id ,data, trx);
+            const eventType = data.isActive === false?
+            EVENT_TYPES.BRANCH_DEACTIVATED:
+            EVENT_TYPES.BRANCH_UPDATED;
+            await insertOutBoxEvent(trx,{
+                aggregateType: "restaurant_branches",
+                aggregateId: branchId,
+                eventType,
+                payload: {branchId}
+            });
+            await trx.commit();
+            return updated
+        } catch (err) {
+            await trx.rollback();
+            throw err;
+        }
     
     }
 }

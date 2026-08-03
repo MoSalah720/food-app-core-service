@@ -1,7 +1,6 @@
 import { Knex } from "knex";
 import { Branch } from "../entity/branch.entity";
 import { db } from "../../../lib/knex/knex";
-import { promises } from "node:dns";
 
 const BRANCH_COLUMNS = [
     'id',
@@ -18,6 +17,7 @@ const BRANCH_COLUMNS = [
     'created_at',
     'updated_at',
     'delivery_radius',
+    'delivery_fee',
     'currency',
     'commission'
 ];
@@ -38,6 +38,7 @@ function toEntity(row: any): Branch {
         createdAt: row.created_at,
         updatedAt: row.updated_at,
         deliveryRadius: row.delivery_radius,
+        deliveryFee: row.delivery_fee,
         currency: row.currency,
         commission: row.commission
     });
@@ -110,7 +111,7 @@ export async function findNearbyBranches(lat:number, lng:number): Promise<any[]>
         }));
     }
 
-export async function updateBranch(id:number , data:Record<string,any>):Promise<Branch> {
+export async function updateBranch(id:number , data:Record<string,any> , conn:Knex = db):Promise<Branch> {
     const mapped: Record<string,any> ={};
     if (data.addressText !== undefined) mapped.address_text = data.addressText;
     if (data.label !== undefined) mapped.label = data.label;
@@ -119,9 +120,10 @@ export async function updateBranch(id:number , data:Record<string,any>):Promise<
     if (data.opensAt !== undefined) mapped.opens_at = data.opensAt;
     if (data.closesAt !== undefined) mapped.closes_at = data.closesAt;
     if (data.deliveryRadius !== undefined) mapped.delivery_radius = data.deliveryRadius;
+    if (data.deliveryFee !== undefined) mapped.delivery_fee = data.deliveryFee;
     if (data.currency !== undefined) mapped.currency = data.currency;
     if (data.acceptOrders !== undefined) mapped.accept_orders = data.acceptOrders;
-    const [row] =await db('restaurant_branches').update({
+    const [row] =await conn('restaurant_branches').update({
         ...mapped,
         updated_at: new Date()
     }).where('id',id).returning(BRANCH_COLUMNS);
@@ -129,12 +131,12 @@ export async function updateBranch(id:number , data:Record<string,any>):Promise<
     return toEntity(row);    
 }
 
-export async function updateBranchStatus(id:number , data:Record<string,any>):Promise<Branch> {
+export async function updateBranchStatus(id:number , data:Record<string,any>, conn:Knex = db):Promise<Branch> {
     const mapped: Record<string,any> ={};
     if(data.isActive !== undefined) mapped.is_active = data.isActive;
      if(data.commission !== undefined) mapped.commission = data.commission;
 
-    const [row] =await db('restaurant_branches').update({
+    const [row] =await conn('restaurant_branches').update({
         ...mapped,
         updated_at: new Date()
     }).where('id',id).returning(BRANCH_COLUMNS);

@@ -6,6 +6,7 @@ import { validateBody } from "../../../lib/validation/validate";
 import { injectable, inject } from "tsyringe";
 import { TOKENS } from "../../../lib/di/tokens";
 import { sendSuccess } from "../../../lib/http/response";
+import { MissingProductIdsQueryError, InvalidReserveItemsError } from "../error";
 
 
 @injectable()
@@ -66,6 +67,33 @@ export class ProductController{
             sendSuccess(res,{message: "Product updated", ...result});
         } catch (err) {
             next(err)
+        }
+    }
+
+    findByBranchAndIds = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const branchId = Number(req.params.id);
+            const raw = typeof req.query.ids === "string" ? req.query.ids : "";
+            const ids = raw.split(",").map((s) => Number(s.trim())).filter((n) => Number.isInteger(n) && n > 0);
+            if (ids.length === 0) throw MissingProductIdsQueryError;
+            const products = await this.productService.findByBranchAndIds(branchId, ids);
+            sendSuccess(res, products);
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    reserveStock = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const branchId = Number(req.params.id);
+            const items = req.body?.items;
+            if (!Array.isArray(items) || items.length === 0) {
+                throw InvalidReserveItemsError;
+            }
+            const result = await this.productService.reserveStock(branchId, items);
+            sendSuccess(res, result);
+        } catch (err) {
+            next(err);
         }
     }
 }

@@ -6,6 +6,7 @@ import { SystemRole } from "../../user/enums";
 import { injectable, inject } from "tsyringe";
 import { TOKENS } from "../../../lib/di/tokens";
 import { sendSuccess } from "../../../lib/http/response";
+import { BranchNotFound } from "../error";
 
 @injectable()
 export class BranchController{
@@ -65,5 +66,29 @@ export class BranchController{
             next(err);
         }
     }
-
+    findByIdWithRestaurant = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const id = Number(req.params.id);
+            const result = await this.branchService.findByIdWithRestaurant(id);
+            if (!result) throw BranchNotFound;
+            const {branch, restaurantStatus} = result;
+            sendSuccess(res, {
+                id: branch.id,
+                restaurantId: branch.restaurantId,
+                restaurantStatus,
+                region: branch.countryCode,
+                isActive: branch.isActive,
+                acceptOrders: branch.acceptOrders,
+                deliveryFee: branch.deliveryFee,
+                commissionBps: branch.commission,
+                currency: branch.currency,
+                lat: Number(branch.lat),
+                lng: Number(branch.lng),
+                name: branch.label,
+                addressText: branch.addressText,
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
 }
